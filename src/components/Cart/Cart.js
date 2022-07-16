@@ -5,9 +5,13 @@ import CartItem from "./CartItem";
 import classes from "./Cart.module.css";
 import CartContext from "../../store/cart-context";
 import Checkout from "./Checkout";
+import React from "react";
 
 const Cart = (props) => {
   const [showCheckout, setShowCheckout] = useState(false);
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  const [submited, setSubmited] = useState(false);
+
   const cartCtx = useContext(CartContext);
 
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
@@ -25,8 +29,9 @@ const Cart = (props) => {
     setShowCheckout(true);
   };
 
-  const submitHandler = async (formData) => {
-    const response = await fetch(
+  const submitOrderHandler = async (formData) => {
+    setIsSubmiting(true);
+    await fetch(
       "https://react-http-8949b-default-rtdb.firebaseio.com/orders.json",
       {
         method: "POST",
@@ -37,6 +42,9 @@ const Cart = (props) => {
         }),
       }
     );
+    setIsSubmiting(false);
+    setSubmited(true);
+    cartCtx.clearCart();
   };
 
   const cartItems = (
@@ -67,17 +75,39 @@ const Cart = (props) => {
     </div>
   );
 
-  return (
-    <Modal onClose={props.onClose}>
+  const modalContent = (
+    <React.Fragment>
+      {" "}
       {cartItems}
       <div className={classes.total}>
         <span>Total Amount</span>
         <span>{totalAmount}</span>
       </div>
       {showCheckout && (
-        <Checkout onConfirm={submitHandler} onCancel={props.onClose} />
+        <Checkout onConfirm={submitOrderHandler} onCancel={props.onClose} />
       )}
       {!showCheckout && modalActions}
+    </React.Fragment>
+  );
+
+  const modalContentIsLoading = <p>Sending order...</p>;
+  
+  const modalContentSuccess = (
+    <React.Fragment>
+      <p>Order was succesfully sent!</p>
+      <div className={classes.actions}>
+        <button className={classes.button} onClick={props.onClose}>
+          Close
+        </button>
+      </div>
+    </React.Fragment>
+  );
+
+  return (
+    <Modal onClose={props.onClose}>
+      {!isSubmiting && !submited && modalContent}
+      {!isSubmiting && submited && modalContentSuccess}
+      {isSubmiting && !submited && modalContentIsLoading}
     </Modal>
   );
 };
