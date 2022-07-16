@@ -26,6 +26,13 @@ const Checkout = (props) => {
     const enteredPostalCode = postalInputRef.current.value;
     const enteredCity = cityInputRef.current.value;
 
+    props.onConfirm({
+        name: enteredName,
+        street: enteredStreet,
+        postal: enteredPostalCode,
+        city: enteredCity
+    })
+
     const enteredNameIsValid = !isEmpty(enteredName);
     const enteredStreetIsValid = !isEmpty(enteredStreet);
     const enteredPostalCodeIsValid = !isNotFiveChars(enteredPostalCode);
