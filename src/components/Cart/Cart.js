@@ -11,6 +11,7 @@ const Cart = (props) => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [isSubmiting, setIsSubmiting] = useState(false);
   const [submited, setSubmited] = useState(false);
+  const [httpError, setHttpError] = useState();
 
   const cartCtx = useContext(CartContext);
 
@@ -31,25 +32,22 @@ const Cart = (props) => {
 
   const submitOrderHandler = async (formData) => {
     setIsSubmiting(true);
-    const response = await fetch(
-      "https://react-http-8949b-default-rtdb.firebaseio.com/orders.json",
-      {
+    try {
+      await fetch("https://react-http-8949b-default-rtdb.firebaseio.com/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user: formData,
           orderedItems: cartCtx.items,
         }),
-      }
-    );
+      });
 
-    if (!response.ok) {
-      throw new Error("Something went wrong!");
+      setIsSubmiting(false);
+      setSubmited(true);
+      cartCtx.clearCart();
+    } catch (e) {
+      setHttpError(e.message);
     }
-
-    setIsSubmiting(false);
-    setSubmited(true);
-    cartCtx.clearCart();
   };
 
   const cartItems = (
@@ -96,6 +94,17 @@ const Cart = (props) => {
 
   const modalContentIsLoading = <p>Sending order...</p>;
 
+  const modalContentError = (
+    <React.Fragment>
+      <p>{`Sorry! Something went wrong: ${httpError}`}</p>
+      <div className={classes.actions}>
+        <button className={classes.button} onClick={props.onClose}>
+          Close
+        </button>
+      </div>
+    </React.Fragment>
+  );
+
   const modalContentSuccess = (
     <React.Fragment>
       <p>Order was succesfully sent!</p>
@@ -109,9 +118,10 @@ const Cart = (props) => {
 
   return (
     <Modal onClose={props.onClose}>
-      {!isSubmiting && !submited && modalContent}
-      {!isSubmiting && submited && modalContentSuccess}
-      {isSubmiting && !submited && modalContentIsLoading}
+      {!httpError && !isSubmiting && !submited && modalContent}
+      {!httpError && !isSubmiting && submited && modalContentSuccess}
+      {!httpError && isSubmiting && !submited && modalContentIsLoading}
+      {httpError && modalContentError}
     </Modal>
   );
 };
