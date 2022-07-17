@@ -83,10 +83,12 @@ const Checkout = (props) => {
         <input type="text" id="city" ref={cityInputRef} />
         {!formValidity.city && <p>Please enter valid city!</p>}
       </div>
+      <div className={classes.actions}>
       <button type="button" onClick={props.onCancel}>
         Cancel
       </button>
       <button>Confirm</button>
+      </div>
     </form>
   );
 };

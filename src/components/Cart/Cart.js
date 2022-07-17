@@ -31,7 +31,7 @@ const Cart = (props) => {
 
   const submitOrderHandler = async (formData) => {
     setIsSubmiting(true);
-    await fetch(
+    const response = await fetch(
       "https://react-http-8949b-default-rtdb.firebaseio.com/orders.json",
       {
         method: "POST",
@@ -42,6 +42,11 @@ const Cart = (props) => {
         }),
       }
     );
+
+    if (!response.ok) {
+      throw new Error("Something went wrong!");
+    }
+
     setIsSubmiting(false);
     setSubmited(true);
     cartCtx.clearCart();
@@ -77,7 +82,6 @@ const Cart = (props) => {
 
   const modalContent = (
     <React.Fragment>
-      {" "}
       {cartItems}
       <div className={classes.total}>
         <span>Total Amount</span>
@@ -91,7 +95,7 @@ const Cart = (props) => {
   );
 
   const modalContentIsLoading = <p>Sending order...</p>;
-  
+
   const modalContentSuccess = (
     <React.Fragment>
       <p>Order was succesfully sent!</p>
